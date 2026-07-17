@@ -1,0 +1,420 @@
+================================================================================
+  AUTHENTICATION MODULE FLOWCHART — TEXT VERSION
+  Multi-Vendor E-Commerce Platform
+  Laravel 12 · Inertia.js · Vue 3 · Jetstream · Custom Manual RBAC (No Spatie)
+================================================================================
+
+LEGEND:
+  ( TERMINAL )      = Start / End of a process
+  [ PROCESS ]       = An internal action, calculation, or database operation
+  / INPUT/OUTPUT /  = Data entry by user (Input) or displaying info/screens (Output)
+  < DECISION >      = A conditional check (Diamond)
+  ----              = Normal flow arrow
+  - - -             = Alternate path / Error loop
+
+
+================================================================================
+  FLOW 1: LOGIN, 2FA CHALLENGE & ROLE-BASED REDIRECTION
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                    / I/O: Load Login Page /
+                              |
+                              v
+                  / I/O: Enter Email &     /
+                  /      Password          /
+                              |
+                              v
+                    [ PROCESS: Click Login ]
+                              |
+                              v
+                   [ PROCESS: Validate Input ]
+                              |
+                              v
+            +----< DECISION: Are Inputs Empty? >----+
+            |                                       |
+           YES                                     NO
+            |                                       |
+            v                                       v
+  / I/O: Show Error   /           [ PROCESS: Check User in Database ]
+  /      Message      /                     |
+     |                                      v
+     |                    +----< DECISION: User Exists? >----+
+     |                    |                                  |
+     |                   NO                                 YES
+     |                    |                                  |
+     |                    v                                  v
+     |         / I/O: Show Invalid /        [ PROCESS: Verify Password ]
+     |         /      Account      /                   |
+     |                                                     v
+     |                              +----< DECISION: Password Correct? >----+
+     |                              |                                       |
+     |                             NO                                      YES
+     |                              |                                       |
+     |                              v                                       v
+     |                  / I/O: Show Invalid /          < DECISION: Is 2FA Enabled? >
+     |                  /      Credentials  /               |                 |
+     |                                                     YES                NO
+     |                                                      |                 |
+     |                                                      v                 |
+     |                                        / I/O: Show 2FA Page & /        |
+     |                                        /      Enter OTP Code  /        |
+     |                                                      |                 |
+     |                                                      v                 |
+     |                                            < DECISION: Code Valid? >   |
+     |                                              |                   |     |
+     |                                             NO                  YES    |
+     |                                              |                   |     |
+     |                                              v                   v     |
+     |                                  / I/O: Show Error /             |     |
+     |                                                                  |     |
+     |                                                                  v     v
+     |                                                    [ PROCESS: Create Session ]
+     |                                                                  |
+     |                                                                  v
+     + - - - - - - - - - - - - - - - - - - - - - - - - - > [ PROCESS: Get User Role ]
+     (Re-enter credentials on error)                                    |
+                                                                        v
+                                                     < DECISION: Which Role? >
+                                                              |
+                                      +-----------------------+-----------------------+
+                                      |                       |                       |
+                                    admin                   seller                 customer
+                                      |                       |                       |
+                                      v                       v                       v
+                             [ PROCESS: Redirect ]   [ PROCESS: Redirect ]   [ PROCESS: Redirect ]
+                             [ to /admin         ]   [ to /seller        ]   [ to /dashboard     ]
+                                      |                       |                       |
+                                      +-----------------------+-----------------------+
+                                                              |
+                                                              v
+                                                      ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 2: REGISTRATION & EMAIL VERIFICATION
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Load Registration Page /
+                              |
+                              v
+                 / I/O: Fill Form (Name,       /
+                 /      Email, Password, Terms)/
+                              |
+                              v
+                  [ PROCESS: Click Register ]
+                              |
+                              v
+                   [ PROCESS: Validate Input ]
+                              |
+                              v
+            +----< DECISION: Are Inputs Valid? >----+
+            |                                       |
+           NO                                      YES
+            |                                       |
+            v                                       v
+  / I/O: Show Validation /         [ PROCESS: Check Email in Database ]
+  /      Error           /                  |
+     |                                      v
+     |                   +----< DECISION: Email Already Taken? >----+
+     |                   |                                          |
+     |                  YES                                        NO
+     |                   |                                          |
+     |                   v                                          v
+     |       / I/O: Show "Email  /        [ PROCESS: Hash Password &      ]
+     |       / Already In Use"   /        [ Create User Record            ]
+     |                                                      |
+     |                                                      v
+     |                                        [ PROCESS: Assign 'customer'    ]
+     |                                        [ Role to User                  +]
+     |                                                      |
+     |                                                      v
+     |                                        [ PROCESS: Auto-Login &         ]
+     |                                        [ Create Session                ]
+     |                                                      |
+     |                                                      v
+     |                                        < DECISION: Is Email Verif.     >
+     |                                        < Required? (fortify.features)  >
+     |                                          |                           |
+     |                                         YES                         NO
+     |                                          |                           |
+     |                                          v                           |
+     |                            [ PROCESS: Send Verif. Email  ]           |
+     |                            [ & Redirect to /verify-email ]           |
+     |                                          |                           |
+     |                                          v                           |
+     |                            / I/O: User Clicks Link       /           |
+     |                            /      in their Email Inbox   /           |
+     |                                          |                           |
+     + - - - - - - - - - - - - - - - - - - - - -+                           |
+     (Re-fill form on error)                    |                           |
+                                                v                           v
+                                        [ PROCESS: Redirect to /dashboard ]
+                                                              |
+                                                              v
+                                                      ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 3: FORGOT PASSWORD
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 [ PROCESS: Click "Forgot Password" ]
+                 [ on Login Page                    ]
+                              |
+                              v
+                 / I/O: Load Forgot Password Page /
+                              |
+                              v
+                 / I/O: Enter Email Address       /
+                              |
+                              v
+                 [ PROCESS: Click "Email Password ]
+                 [ Reset Link"                    ]
+                              |
+                              v
+                   [ PROCESS: Validate Email ]
+                              |
+                              v
+            +----< DECISION: User Exists? >----+
+            |                                  |
+           NO                                 YES
+            |                                  |
+            v                                  v
+  / I/O: Show Error   /            [ PROCESS: Generate Reset Token ]
+  / "Email not found" /                        |
+     |                                         v
+     |                             [ PROCESS: Send Reset Link to ]
+     |                             [ User's Email Address        ]
+     |                                         |
+     |                                         v
+     + - - - - - - - - - - - - - > / I/O: Show Success Message /
+                                               |
+                                               v
+                                       ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 4: RESET PASSWORD (From Email Link)
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: User Clicks Link in /
+                 /      Email               /
+                              |
+                              v
+                 / I/O: Load Reset Password Page /
+                              |
+                              v
+                 / I/O: Enter Email, New         /
+                 /      Password & Confirm       /
+                              |
+                              v
+                 [ PROCESS: Click "Reset Password" ]
+                              |
+                              v
+             +---< DECISION: Is Token Valid/Not Expired? >---+
+             |                                               |
+            NO                                              YES
+             |                                               |
+             v                                               v
+   / I/O: Show "Invalid /                      [ PROCESS: Hash New Password & ]
+   / or Expired Token"  /                      [ Update Database              ]
+             |                                               |
+             |                                               v
+             |                                 [ PROCESS: Redirect to Login ]
+             |                                 [ with Success Message       ]
+             |                                               |
+             + - - - - - - - - - - - - - - - - - - - - - - - +
+                                                             |
+                                                             v
+                                                     ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 5: USER PROFILE MANAGEMENT (Jetstream Features)
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 [ PROCESS: Go to /user/profile ]
+                              |
+                              +--------------------------+
+                              |                          |
+                              v                          v
+             / I/O: Enter New Profile Info /   / I/O: Enter New Password /
+             /      (Name, Email)          /   / (Current, New, Confirm) /
+                              |                          |
+                              v                          v
+             [ PROCESS: Validate Inputs    ]   [ PROCESS: Validate Inputs ]
+                              |                          |
+                              v                          v
+             [ PROCESS: Save to Database   ]   [ PROCESS: Hash & Save     ]
+                              |                          |
+                              +--------------------------+
+                              |
+                              v
+                      ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 6: 2FA SETUP & LOGOUT OTHER BROWSER SESSIONS
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 [ PROCESS: Go to /user/profile ]
+                              |
+                              +-------------------------------+
+                              |                               |
+                              v                               v
+             [ PROCESS: Click Enable 2FA     ]   [ PROCESS: Click Logout Other ]
+                              |                  [ Browser Sessions            ]
+                              v                               |
+             [ PROCESS: Generate Secret Key  ]                v
+             [ & Recovery Codes              ]   / I/O: Prompt for Password    /
+                              |                  /      Confirmation           /
+                              v                               |
+             / I/O: Display QR Code          /                v
+                              |                  [ PROCESS: Validate Password  ]
+                              v                               |
+             / I/O: User Scans QR & Enters   /                v
+             /      OTP to Confirm           /   [ PROCESS: Delete Session DB  ]
+                              |                  [ Records/Files for Other     ]
+                              v                  [ Devices                     ]
+             / I/O: Show 2FA Enabled Success /                |
+                              |                               |
+                              +-------------------------------+
+                              |
+                              v
+                      ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 7: ACCOUNT DELETION
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 [ PROCESS: Go to /user/profile ]
+                              |
+                              v
+                 [ PROCESS: Click Delete Account ]
+                              |
+                              v
+                 / I/O: Prompt for Password      /
+                 /      Confirmation             /
+                              |
+                              v
+            +----< DECISION: Password Correct? >----+
+            |                                       |
+           NO                                      YES
+            |                                       |
+            v                                       v
+  / I/O: Show Error      /         [ PROCESS: Soft Delete User Record  ]
+  / "Incorrect Password" /         [ (Sets 'deleted_at' timestamp)     ]
+            |                                       |
+            + - - - - - - - - - - - - - - - - - - - +
+                                                    |
+                                                    v
+                                      [ PROCESS: Invalidate Session ]
+                                                    |
+                                                    v
+                                      [ PROCESS: Redirect to Home ]
+                                                    |
+                                                    v
+                                            ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 8: LOGOUT
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 [ PROCESS: Click Logout ]
+                 [ on Dashboard Nav      ]
+                              |
+                              v
+                 [ PROCESS: Invalidate Session & ]
+                 [ Clear Auth Cookies            ]
+                              |
+                              v
+                 [ PROCESS: Redirect to Home (/) ]
+                 [ or Login Page                 ]
+                              |
+                              v
+                     ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 9: RBAC ROUTE PROTECTION & AUTHORIZATION
+================================================================================
+
+                     ( TERMINAL: START Request to Protected Route )
+                     ( e.g., User goes to /admin/products         )
+                              |
+                              v
+                 [ PROCESS: RoleMiddleware Intercepts Request ]
+                 [ (e.g., middleware('role:admin'))           ]
+                              |
+                              v
+                 [ PROCESS: AccessControlService gets User    ]
+                 [ Roles (Checks cache or database)           ]
+                              |
+                              v
+            +----< DECISION: Does User Have Required Role? >----+
+            |                                                   |
+           NO                                                  YES
+            |                                                   |
+            v                                                   v
+  [ PROCESS: Abort 403 Forbidden ]                 [ PROCESS: Allow Request ]
+            |                                                   |
+            v                                                   v
+  / I/O: Show "Unauthorized" /                     / I/O: Load Requested    /
+  /      Error Page          /                     /      Page/Data         /
+            |                                                   |
+            v                                                   v
+   ( TERMINAL: END )                                  ( TERMINAL: END )
+
+
+================================================================================
+  FILES INVOLVED IN THESE FLOWS
+================================================================================
+
+  Layer        File
+  -----------  ----------------------------------------------------------------
+  View         resources/js/Pages/Auth/Login.vue
+  View         resources/js/Pages/Auth/Register.vue
+  View         resources/js/Pages/Auth/ForgotPassword.vue
+  View         resources/js/Pages/Auth/ResetPassword.vue
+  View         resources/js/Pages/Auth/VerifyEmail.vue
+  View         resources/js/Pages/Auth/TwoFactorChallenge.vue
+  View         resources/js/Pages/Profile/Show.vue
+  Route        routes/web.php
+  Config       config/fortify.php
+  Config       config/jetstream.php
+  Action       app/Actions/Fortify/CreateNewUser.php
+  Action       app/Actions/Fortify/ResetUserPassword.php
+  Action       app/Actions/Fortify/UpdateUserProfileInformation.php
+  Action       app/Actions/Fortify/UpdateUserPassword.php
+  Action       app/Actions/Jetstream/DeleteUser.php
+  Model        app/Models/User.php
+  Middleware   app/Http/Middleware/RoleMiddleware.php
+  Middleware   app/Http/Middleware/HandleInertiaRequests.php
+  Service      app/Services/AccessControlService.php
+================================================================================

@@ -1,0 +1,113 @@
+================================================================================
+  MODULE 2: PRODUCT CATALOG FLOWCHART — TEXT VERSION
+  Multi-Vendor E-Commerce Platform
+================================================================================
+
+LEGEND:
+  ( TERMINAL )      = Start / End of a process
+  [ PROCESS ]       = An internal action, calculation, or database operation
+  / INPUT/OUTPUT /  = Data entry by user (Input) or displaying info/screens (Output)
+  < DECISION >      = A conditional check (Diamond)
+  ----              = Normal flow arrow
+  - - -             = Alternate path / Error loop
+
+
+================================================================================
+  FLOW 1: SELLER CREATES PRODUCT (DRAFT TO PENDING_REVIEW)
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Seller navigates to   /
+                 /      "Add New Product"     /
+                              |
+                              v
+                 [ PROCESS: Load Categories & ]
+                 [          Attributes        ]
+                              |
+                              v
+                 / I/O: Seller fills form     /
+                 /      (Name, Category,      /
+                 /      Desc, Images)         /
+                              |
+                              v
+                 / I/O: Seller defines        /
+                 /      Attributes & Variants /
+                 /      (Sizes, Colors, etc.) /
+                              |
+                              v
+                 [ PROCESS: Click "Save &     ]
+                 [ Submit for Review"         ]
+                              |
+                              v
+                 [ PROCESS: Validate Inputs   ]
+                              |
+                              v
+            +----< DECISION: Are Inputs Valid? >----+
+            |                                       |
+           NO                                      YES
+            |                                       |
+            v                                       v
+  / I/O: Show Validation /         [ PROCESS: Save to `products`     ]
+  /      Errors          /         [ status = 'pending_review'       ]
+            |                                       |
+            + - - - - - - - - - - - - - - - - - - - +
+                                                    |
+                                                    v
+                                   [ PROCESS: Save to `product_variants` ]
+                                                    |
+                                                    v
+                                   [ PROCESS: Save `product_images`      ]
+                                                    |
+                                                    v
+                                   [ PROCESS: Log to `product_approval_logs` ]
+                                                    |
+                                                    v
+                                   [ PROCESS: Dispatch Admin Notification    ]
+                                                    |
+                                                    v
+                                            ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 2: ADMIN PRODUCT APPROVAL GATE
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Admin views           /
+                 /      "Pending Approvals"   /
+                              |
+                              v
+                 [ PROCESS: Fetch products    ]
+                 [ where status='pending_review']
+                              |
+                              v
+                 / I/O: Admin reviews Product /
+                 /      Details & Images      /
+                              |
+                              v
+            +----< DECISION: Approve or Reject? >----+
+            |                                        |
+          REJECT                                  APPROVE
+            |                                        |
+            v                                        v
+  / I/O: Prompt for Rejection /            [ PROCESS: Update status to 'approved' ]
+  /      Reason               /                      |
+            |                                        |
+            v                                        |
+  [ PROCESS: Update status to 'rejected' ]           |
+  [ Save reason to DB                    ]           |
+            |                                        |
+            v                                        |
+  [ PROCESS: Log action to                   ]<------+
+  [ `product_approval_logs`                  ]
+            |
+            v
+  [ PROCESS: Notify Seller of Status Change ]
+            |
+            v
+    ( TERMINAL: END )
+================================================================================

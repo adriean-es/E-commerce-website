@@ -11,8 +11,8 @@ class RbacSeeder extends Seeder
     public function run(): void
     {
         // ── Roles ──────────────────────────────────────
-        $admin    = Role::firstOrCreate(['name' => 'admin']);
-        $vendor   = Role::firstOrCreate(['name' => 'vendor']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $vendor = Role::firstOrCreate(['name' => 'seller']);
         $customer = Role::firstOrCreate(['name' => 'customer']);
 
         // ── Permissions ────────────────────────────────

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Authentication Module — Flowcharts</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #888;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.page {
+  width: 210mm;
+  background: #fff;
+  padding: 14mm 18mm 18mm;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.p-title {
+  text-align: center;
+  font-size: 13pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-bottom: 2.5px solid #000;
+  padding-bottom: 5px;
+  margin-bottom: 3px;
+}
+.p-sub {
+  text-align: center;
+  font-size: 7.5pt;
+  color: #444;
+  margin-bottom: 8px;
+}
+.f-label {
+  font-size: 9.5pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #000;
+  padding-bottom: 3px;
+  margin-bottom: 8px;
+}
+svg.flow {
+  display: block;
+  margin: 0 auto;
+  width: 174mm;
+  height: auto;
+}
+.footer {
+  margin-top: 8px;
+  border-top: 1px solid #000;
+  font-size: 7pt;
+  color: #444;
+  padding-top: 3px;
+  display: flex;
+  justify-content: space-between;
+}
+@media print {
+  body { background: #fff; padding: 0; gap: 0; }
+  .page { box-shadow: none; page-break-after: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====================================================
+     PAGE 1 — LOGIN FLOW
+===================================================== -->
+<div class="page">
+  <div class="p-title">Authentication Module — Flowcharts</div>
+  <div class="p-sub">Multi-Vendor E-Commerce Platform &nbsp;·&nbsp; Laravel 12 &nbsp;·&nbsp; Inertia.js &nbsp;·&nbsp; Vue 3 &nbsp;·&nbsp; Jetstream &nbsp;·&nbsp; RBAC</div>
+  <div class="f-label">Flow 1 — User Login</div>
+
+  <svg class="flow" viewBox="0 0 550 660" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a1" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <path d="M0,0 L0,7 L7,3.5 z" fill="#000"/>
+      </marker>
+    </defs>
+
+    <!--
+      COORDINATE SYSTEM:
+      cx_main = 275  (center of main flow column)
+      cx_err  = 80   (center of left error column)
+      Process rect:  x=210, w=130, h=36
+      Terminal oval: rx=52,  ry=19
+      Diamond:       half_w=72, half_h=34
+      Error rect:    x=20, w=120, h=36
+    -->
+
+    <!-- ▶ 1. START -->
+    <ellipse cx="275" cy="38" rx="52" ry="19" stroke="black" stroke-width="1.8" fill="white"/>
+    <text x="275" y="43" text-anchor="middle" font-size="13" font-weight="bold">START</text>
+    <line x1="275" y1="57" x2="275" y2="67" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 2. Login Page -->
+    <rect x="210" y="68" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="91" text-anchor="middle" font-size="11">Login Page</text>
+    <line x1="275" y1="104" x2="275" y2="113" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 3. Enter Email & Password -->
+    <rect x="210" y="114" width="130" height="40" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="130" text-anchor="middle" font-size="10">Enter Email</text>
+    <text x="275" y="147" text-anchor="middle" font-size="10">&amp; Password</text>
+    <line x1="275" y1="154" x2="275" y2="163" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 4. Click Login -->
+    <rect x="210" y="164" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="187" text-anchor="middle" font-size="11">Click Login</text>
+    <line x1="275" y1="200" x2="275" y2="209" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 5. DIAMOND: Are Inputs Valid?
+         center(275,244) top(275,210) right(347,244) bottom(275,278) left(203,244) -->
+    <polygon points="275,210 347,244 275,278 203,244" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="239" text-anchor="middle" font-size="9.5">Are Inputs</text>
+    <text x="275" y="253" text-anchor="middle" font-size="9.5">Empty?</text>
+
+    <!-- D5 YES → left to error -->
+    <line x1="203" y1="244" x2="140" y2="244" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="170" y="239" text-anchor="middle" font-size="9" font-style="italic">YES</text>
+    <!-- E1: Show Error Message -->
+    <rect x="20" y="226" width="120" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="80" y="241" text-anchor="middle" font-size="9">Show Error</text>
+    <text x="80" y="255" text-anchor="middle" font-size="9">Message</text>
+    <!-- Loop back: E1 top → up → right → Enter Email left side -->
+    <path d="M 80,226 L 80,134 L 209,134" stroke="black" stroke-width="1.2" fill="none" stroke-dasharray="5,3" marker-end="url(#a1)"/>
+    <text x="64" y="185" text-anchor="middle" font-size="7.5" font-style="italic" transform="rotate(-90,64,185)">Re-enter</text>
+
+    <!-- D5 NO → down -->
+    <line x1="275" y1="278" x2="275" y2="289" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="283" y="287" font-size="9" font-style="italic">NO</text>
+
+    <!-- ▶ 6. Check User in Database -->
+    <rect x="210" y="290" width="130" height="40" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="306" text-anchor="middle" font-size="10">Check User</text>
+    <text x="275" y="322" text-anchor="middle" font-size="10">in Database</text>
+    <line x1="275" y1="330" x2="275" y2="340" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 7. DIAMOND: User Exists?
+         center(275,376) top(275,342) right(347,376) bottom(275,410) left(203,376) -->
+    <polygon points="275,342 347,376 275,410 203,376" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="371" text-anchor="middle" font-size="9.5">User</text>
+    <text x="275" y="385" text-anchor="middle" font-size="9.5">Exists?</text>
+
+    <!-- D7 YES → down -->
+    <line x1="275" y1="410" x2="275" y2="422" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="283" y="420" font-size="9" font-style="italic">YES</text>
+    <!-- D7 NO → left to error -->
+    <line x1="203" y1="376" x2="140" y2="376" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="170" y="371" text-anchor="middle" font-size="9" font-style="italic">NO</text>
+    <!-- E2: Show Invalid Account -->
+    <rect x="20" y="358" width="120" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="80" y="373" text-anchor="middle" font-size="9">Show Invalid</text>
+    <text x="80" y="387" text-anchor="middle" font-size="9">Account</text>
+
+    <!-- ▶ 8. Verify Password -->
+    <rect x="210" y="423" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="446" text-anchor="middle" font-size="11">Verify Password</text>
+    <line x1="275" y1="459" x2="275" y2="469" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 9. DIAMOND: Password Correct?
+         center(275,504) top(275,470) right(347,504) bottom(275,538) left(203,504) -->
+    <polygon points="275,470 347,504 275,538 203,504" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="499" text-anchor="middle" font-size="9.5">Password</text>
+    <text x="275" y="513" text-anchor="middle" font-size="9.5">Correct?</text>
+
+    <!-- D9 YES → down -->
+    <line x1="275" y1="538" x2="275" y2="550" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="283" y="548" font-size="9" font-style="italic">YES</text>
+    <!-- D9 NO → left to error -->
+    <line x1="203" y1="504" x2="140" y2="504" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="170" y="499" text-anchor="middle" font-size="9" font-style="italic">NO</text>
+    <!-- E3: Show Invalid Credentials -->
+    <rect x="20" y="486" width="120" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="80" y="501" text-anchor="middle" font-size="9">Show Invalid</text>
+    <text x="80" y="515" text-anchor="middle" font-size="9">Account</text>
+
+    <!-- ▶ 10. Create Session -->
+    <rect x="210" y="551" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="574" text-anchor="middle" font-size="11">Create Session</text>
+    <line x1="275" y1="587" x2="275" y2="597" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 11. Get User Role -->
+    <rect x="210" y="598" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="621" text-anchor="middle" font-size="11">Get User Role</text>
+    <line x1="275" y1="634" x2="275" y2="644" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 12. Open Dashboard -->
+    <rect x="210" y="645" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="668" text-anchor="middle" font-size="11">Open Dashboard</text>
+    <line x1="275" y1="681" x2="275" y2="691" stroke="black" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <!-- ▶ 13. END -->
+    <ellipse cx="275" cy="710" rx="52" ry="19" stroke="black" stroke-width="1.8" fill="white"/>
+    <text x="275" y="715" text-anchor="middle" font-size="13" font-weight="bold">END</text>
+
+  </svg>
+
+  <div class="footer">
+    <span>Authentication Module — Multi-Vendor E-Commerce Platform</span>
+    <span>Page 1 of 2 &nbsp;|&nbsp; Login Flow</span>
+  </div>
+</div>
+
+
+<!-- ====================================================
+     PAGE 2 — REGISTRATION FLOW
+===================================================== -->
+<div class="page">
+  <div class="p-title">Authentication Module — Flowcharts</div>
+  <div class="p-sub">Multi-Vendor E-Commerce Platform &nbsp;·&nbsp; Laravel 12 &nbsp;·&nbsp; Inertia.js &nbsp;·&nbsp; Vue 3 &nbsp;·&nbsp; Jetstream &nbsp;·&nbsp; RBAC</div>
+  <div class="f-label">Flow 2 — User Registration</div>
+
+  <svg class="flow" viewBox="0 0 550 720" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <path d="M0,0 L0,7 L7,3.5 z" fill="#000"/>
+      </marker>
+    </defs>
+
+    <!-- ▶ 1. START -->
+    <ellipse cx="275" cy="38" rx="52" ry="19" stroke="black" stroke-width="1.8" fill="white"/>
+    <text x="275" y="43" text-anchor="middle" font-size="13" font-weight="bold">START</text>
+    <line x1="275" y1="57" x2="275" y2="67" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 2. Registration Page -->
+    <rect x="210" y="68" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="91" text-anchor="middle" font-size="11">Registration Page</text>
+    <line x1="275" y1="104" x2="275" y2="113" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 3. Fill Form -->
+    <rect x="210" y="114" width="130" height="44" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="130" text-anchor="middle" font-size="10">Fill: Name, Email,</text>
+    <text x="275" y="146" text-anchor="middle" font-size="10">Password &amp; Terms</text>
+    <line x1="275" y1="158" x2="275" y2="168" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 4. Click Register -->
+    <rect x="210" y="169" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="192" text-anchor="middle" font-size="11">Click Register</text>
+    <line x1="275" y1="205" x2="275" y2="214" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 5. DIAMOND: Are Inputs Valid?
+         center(275,250) top(275,216) right(347,250) bottom(275,284) left(203,250) -->
+    <polygon points="275,216 347,250 275,284 203,250" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="245" text-anchor="middle" font-size="9.5">Are Inputs</text>
+    <text x="275" y="259" text-anchor="middle" font-size="9.5">Valid?</text>
+
+    <!-- D5 NO → left to E1 -->
+    <line x1="203" y1="250" x2="140" y2="250" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="170" y="245" text-anchor="middle" font-size="9" font-style="italic">NO</text>
+    <!-- E1: Show Validation Error -->
+    <rect x="20" y="232" width="120" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="80" y="247" text-anchor="middle" font-size="9">Show</text>
+    <text x="80" y="261" text-anchor="middle" font-size="9">Validation Error</text>
+    <!-- Loop back to Fill Form -->
+    <path d="M 80,232 L 80,136 L 209,136" stroke="black" stroke-width="1.2" fill="none" stroke-dasharray="5,3" marker-end="url(#a2)"/>
+    <text x="64" y="190" text-anchor="middle" font-size="7.5" font-style="italic" transform="rotate(-90,64,190)">Re-fill form</text>
+
+    <!-- D5 YES → down -->
+    <line x1="275" y1="284" x2="275" y2="295" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="283" y="293" font-size="9" font-style="italic">YES</text>
+
+    <!-- ▶ 6. Check Email in Database -->
+    <rect x="210" y="296" width="130" height="40" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="312" text-anchor="middle" font-size="10">Check Email</text>
+    <text x="275" y="328" text-anchor="middle" font-size="10">in Database</text>
+    <line x1="275" y1="336" x2="275" y2="346" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 7. DIAMOND: Email Already Taken?
+         center(275,382) top(275,348) right(347,382) bottom(275,416) left(203,382) -->
+    <polygon points="275,348 347,382 275,416 203,382" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="377" text-anchor="middle" font-size="9.5">Email</text>
+    <text x="275" y="391" text-anchor="middle" font-size="9.5">Already Taken?</text>
+
+    <!-- D7 YES → left to E2 -->
+    <line x1="203" y1="382" x2="140" y2="382" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="170" y="377" text-anchor="middle" font-size="9" font-style="italic">YES</text>
+    <!-- E2: Email already in use -->
+    <rect x="20" y="364" width="120" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="80" y="379" text-anchor="middle" font-size="8.5">Show "Email</text>
+    <text x="80" y="393" text-anchor="middle" font-size="8.5">Already In Use"</text>
+
+    <!-- D7 NO → down -->
+    <line x1="275" y1="416" x2="275" y2="427" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+    <text x="283" y="425" font-size="9" font-style="italic">NO</text>
+
+    <!-- ▶ 8. Hash Password & Create User -->
+    <rect x="210" y="428" width="130" height="44" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="444" text-anchor="middle" font-size="10">Hash Password &amp;</text>
+    <text x="275" y="460" text-anchor="middle" font-size="10">Create User Record</text>
+    <line x1="275" y1="472" x2="275" y2="482" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 9. Assign 'customer' Role -->
+    <rect x="210" y="483" width="130" height="40" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="499" text-anchor="middle" font-size="10">Assign 'customer'</text>
+    <text x="275" y="515" text-anchor="middle" font-size="10">Role to User</text>
+    <line x1="275" y1="523" x2="275" y2="533" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 10. Auto-Login & Create Session -->
+    <rect x="210" y="534" width="130" height="40" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="550" text-anchor="middle" font-size="10">Auto-Login &amp;</text>
+    <text x="275" y="566" text-anchor="middle" font-size="10">Create Session</text>
+    <line x1="275" y1="574" x2="275" y2="584" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 11. Redirect to Dashboard -->
+    <rect x="210" y="585" width="130" height="36" stroke="black" stroke-width="1.5" fill="white"/>
+    <text x="275" y="600" text-anchor="middle" font-size="10">Redirect to</text>
+    <text x="275" y="614" text-anchor="middle" font-size="10">/dashboard</text>
+    <line x1="275" y1="621" x2="275" y2="631" stroke="black" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ▶ 12. END -->
+    <ellipse cx="275" cy="650" rx="52" ry="19" stroke="black" stroke-width="1.8" fill="white"/>
+    <text x="275" y="655" text-anchor="middle" font-size="13" font-weight="bold">END</text>
+
+  </svg>
+
+  <div class="footer">
+    <span>Authentication Module — Multi-Vendor E-Commerce Platform</span>
+    <span>Page 2 of 2 &nbsp;|&nbsp; Registration Flow</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+# Implementation Plan: Module 2 - Product & Catalog Management
+
+## 🎯 Goal Overview
+We are now moving to **Module 2: Product & Catalog Management** for your Multi-Vendor ERP. 
+
+This module is responsible for allowing **Sellers** to create and manage their product catalogs, including handling complex variations (like size/color), categories, and pricing. Crucially, it will also include the **Admin Approval Gates**, meaning products created by sellers won't appear on the public storefront until an Admin reviews and approves them.
+
+> [!WARNING]
+> **Inventory Notice:** As per your thesis requirements (Module 4), direct CRUD on inventory stock levels is disabled. Therefore, while this Catalog module will define the SKUs and prices, the actual **stock quantities** will remain 0 until we build the Supplier/PO Inventory system later.
+
+---
+
+## Proposed Changes
+
+### 1. Database Schema (Migrations)
+
+We will create a structured catalog database optimized for a multi-vendor environment.
+
+#### [NEW] `create_categories_table`
+- `id`, `parent_id` (For sub-categories), `name`, `slug`, `is_active`.
+- *Self-referencing relationship to allow infinite category depth.*
+
+#### [NEW] `create_products_table`
+- `id`, `shop_id` (Foreign key to shops table), `category_id`.
+- `name`, `slug`, `description`.
+- `status` (Enum: `pending_approval`, `approved`, `rejected` - for Admin gates).
+- `deleted_at` (Soft Deletes for ERP audit compliance).
+
+#### [NEW] `create_product_variants_table`
+- `id`, `product_id`.
+- `sku` (Unique identifier).
+- `price` (Selling price), `cost_price` (For profit tracking later).
+- `attributes` (JSON column to flexibly store sizes, colors, e.g., `{"Color": "Red", "Size": "XL"}`).
+- *Note: `stock_quantity` will be managed exclusively by the Inventory Module later.*
+
+---
+
+### 2. Backend Models & Relationships
+
+#### [NEW] `app/Models/Category.php`
+- Relationships: `parent()`, `children()`, `products()`.
+
+#### [NEW] `app/Models/Product.php`
+- Relationships: `shop()`, `category()`, `variants()`.
+- Scope: `scopeApproved()` to easily fetch only approved products.
+
+#### [NEW] `app/Models/ProductVariant.php`
+- Relationships: `product()`.
+- Casts: `attributes` cast to `array`.
+
+---
+
+### 3. Backend Controllers & Routes
+
+We will split the logic based on RBAC (Role-Based Access Control).
+
+#### [NEW] `app/Http/Controllers/Seller/ProductController.php`
+- **Protected by:** `role:seller` middleware.
+- **Functions:** `index` (List own products), `create`, `store` (Saves product & variants, sets status to `pending_approval`), `edit`, `update`, `destroy`.
+
+#### [NEW] `app/Http/Controllers/Admin/CatalogApprovalController.php`
+- **Protected by:** `role:admin` middleware.
+- **Functions:** `index` (List all `pending_approval` products), `approve` (Changes status to `approved`), `reject`.
+
+---
+
+### 4. Frontend UI (Inertia + Vue3 + Shadcn)
+
+We will build premium, responsive interfaces for both roles.
+
+#### [NEW] `resources/js/Pages/Seller/Products/Index.vue`
+- A Shadcn DataTable listing the seller's products, showing current approval status.
+
+#### [NEW] `resources/js/Pages/Seller/Products/Create.vue`
+- A complex, dynamic form.
+- Allows selecting categories.
+- Features a dynamic variant generator (e.g., adding options like "Color" and "Size" automatically generates SKU rows for Red-L, Red-XL, etc.).
+
+#### [NEW] `resources/js/Pages/Admin/Catalog/Approvals.vue`
+- A queue interface for Admins to review pending products and click "Approve" or "Reject".
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]  
+> 1. Do you want to allow Sellers to create their own **Categories**, or are Categories strictly managed by the **Admin** to maintain a clean storefront? (Usually, in multi-vendor apps like Shopee/Lazada, Admins manage the master categories).
+> 2. Will variants always have a `price` (e.g., a Red shirt costs 500, a Blue shirt costs 500), or will the base product have a price and variants just add an `extra_fee`?
+
+## Verification Plan
+- [ ] Run migrations and verify table structures in MySQL.
+- [ ] Seed master categories.
+- [ ] Test Seller creating a product (Verify status defaults to `pending_approval`).
+- [ ] Test Admin viewing and approving the product.

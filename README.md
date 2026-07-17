@@ -1,4 +1,4 @@
-# Setup Guide
+# Setup Guidegit 
 
 ## 1. Install PHP dependencies (Laravel)
 composer install
