@@ -1,26 +1,71 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import ApplicationMark from '@/Components/ApplicationMark.vue';
+import { ref, computed } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import Banner from '@/Components/Banner.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import {
+    LayoutDashboard,
+    User,
+    ShoppingBag,
+    Package,
+    Settings,
+    LogOut,
+    Menu,
+    X,
+    ChevronDown,
+    Shield,
+    Store,
+    Users,
+    BarChart3,
+    FileText,
+    Home,
+    Bell,
+} from '@lucide/vue';
 
 defineProps({
     title: String,
 });
 
-const showingNavigationDropdown = ref(false);
+const page = usePage();
 
-const switchToTeam = (team) => {
-    router.put(route('current-team.update'), {
-        team_id: team.id,
-    }, {
-        preserveState: false,
-    });
-};
+const sidebarOpen = ref(false);
+
+const userRoles = computed(() => page.props.userRoles || []);
+const isAdmin = computed(() => userRoles.value.includes('admin'));
+const isVendor = computed(() => userRoles.value.includes('vendor'));
+const userName = computed(() => page.props.auth?.user?.name || 'User');
+const userEmail = computed(() => page.props.auth?.user?.email || '');
+const userPhoto = computed(() => page.props.auth?.user?.profile_photo_url || null);
+
+const primaryRole = computed(() => {
+    if (isAdmin.value) return { label: 'Admin', color: 'bg-red-100 text-red-700 border-red-200' };
+    if (isVendor.value) return { label: 'Vendor', color: 'bg-amber-100 text-amber-700 border-amber-200' };
+    return { label: 'Customer', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' };
+});
+
+const navItems = computed(() => {
+    const items = [
+        { label: 'Dashboard', icon: LayoutDashboard, route: 'dashboard', active: route().current('dashboard') },
+        { label: 'Profile', icon: User, route: 'profile.show', active: route().current('profile.show') },
+    ];
+
+    if (isAdmin.value) {
+        items.push(
+            { label: 'Manage Users', icon: Users, route: 'dashboard', active: false, badge: 'Admin' },
+            { label: 'Manage Products', icon: Package, route: 'dashboard', active: false, badge: 'Admin' },
+            { label: 'Analytics', icon: BarChart3, route: 'dashboard', active: false, badge: 'Admin' },
+        );
+    }
+
+    if (isVendor.value) {
+        items.push(
+            { label: 'My Store', icon: Store, route: 'dashboard', active: false, badge: 'Vendor' },
+            { label: 'My Products', icon: Package, route: 'dashboard', active: false, badge: 'Vendor' },
+            { label: 'Orders', icon: ShoppingBag, route: 'dashboard', active: false, badge: 'Vendor' },
+        );
+    }
+
+    return items;
+});
 
 const logout = () => {
     router.post(route('logout'));
@@ -30,260 +75,215 @@ const logout = () => {
 <template>
     <div>
         <Head :title="title" />
-
         <Banner />
 
-        <div class="min-h-screen bg-gray-100">
-            <nav class="bg-white border-b border-gray-100">
-                <!-- Primary Navigation Menu -->
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="shrink-0 flex items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationMark class="block h-9 w-auto" />
-                                </Link>
-                            </div>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-                            <!-- Navigation Links -->
-                            <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
-                                </NavLink>
-                            </div>
+        <div class="min-h-screen bg-gray-50 flex" style="font-family:'Inter',sans-serif;">
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- SIDEBAR (Desktop)                       -->
+            <!-- ═══════════════════════════════════════ -->
+            <aside class="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-gray-200 fixed inset-y-0 left-0 z-30">
+                <!-- Logo -->
+                <div class="h-16 flex items-center px-6 border-b border-gray-100">
+                    <Link href="/" class="flex items-center gap-2">
+                        <ShoppingBag class="h-7 w-7 text-cyan-600" />
+                        <span class="text-lg font-black tracking-tight">
+                            <span class="text-cyan-600">Sari</span><span class="text-gray-900">Sari</span><span class="text-gray-300">.ph</span>
+                        </span>
+                    </Link>
+                </div>
+
+                <!-- User card -->
+                <div class="px-4 py-4 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <img
+                            v-if="$page.props.jetstream?.managesProfilePhotos && userPhoto"
+                            :src="userPhoto" :alt="userName"
+                            class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100"
+                        />
+                        <div v-else class="h-10 w-10 rounded-full bg-cyan-50 flex items-center justify-center ring-2 ring-gray-100">
+                            <User class="h-5 w-5 text-cyan-600" />
                         </div>
-
-                        <div class="hidden sm:flex sm:items-center sm:ms-6">
-                            <div class="ms-3 relative">
-                                <!-- Teams Dropdown -->
-                                <Dropdown v-if="$page.props.jetstream.hasTeamFeatures" align="right" width="60">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
-                                                {{ $page.props.auth.user.current_team.name }}
-
-                                                <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <div class="w-60">
-                                            <!-- Team Management -->
-                                            <div class="block px-4 py-2 text-xs text-gray-400">
-                                                Manage Team
-                                            </div>
-
-                                            <!-- Team Settings -->
-                                            <DropdownLink :href="route('teams.show', $page.props.auth.user.current_team)">
-                                                Team Settings
-                                            </DropdownLink>
-
-                                            <DropdownLink v-if="$page.props.jetstream.canCreateTeams" :href="route('teams.create')">
-                                                Create New Team
-                                            </DropdownLink>
-
-                                            <!-- Team Switcher -->
-                                            <template v-if="$page.props.auth.user.all_teams.length > 1">
-                                                <div class="border-t border-gray-200" />
-
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    Switch Teams
-                                                </div>
-
-                                                <template v-for="team in $page.props.auth.user.all_teams" :key="team.id">
-                                                    <form @submit.prevent="switchToTeam(team)">
-                                                        <DropdownLink as="button">
-                                                            <div class="flex items-center">
-                                                                <svg v-if="team.id == $page.props.auth.user.current_team_id" class="me-2 size-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-
-                                                                <div>{{ team.name }}</div>
-                                                            </div>
-                                                        </DropdownLink>
-                                                    </form>
-                                                </template>
-                                            </template>
-                                        </div>
-                                    </template>
-                                </Dropdown>
-                            </div>
-
-                            <!-- Settings Dropdown -->
-                            <div class="ms-3 relative">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <button v-if="$page.props.jetstream.managesProfilePhotos" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
-                                            <img class="size-8 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name">
-                                        </button>
-
-                                        <span v-else class="inline-flex rounded-md">
-                                            <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
-                                                {{ $page.props.auth.user.name }}
-
-                                                <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <!-- Account Management -->
-                                        <div class="block px-4 py-2 text-xs text-gray-400">
-                                            Manage Account
-                                        </div>
-
-                                        <DropdownLink :href="route('profile.show')">
-                                            Profile
-                                        </DropdownLink>
-
-                                        <DropdownLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')">
-                                            API Tokens
-                                        </DropdownLink>
-
-                                        <div class="border-t border-gray-200" />
-
-                                        <!-- Authentication -->
-                                        <form @submit.prevent="logout">
-                                            <DropdownLink as="button">
-                                                Log Out
-                                            </DropdownLink>
-                                        </form>
-                                    </template>
-                                </Dropdown>
-                            </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
+                            <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
                         </div>
+                    </div>
+                    <!-- Role badge -->
+                    <div class="mt-3 flex items-center gap-2">
+                        <span :class="primaryRole.color" class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border">
+                            <Shield class="h-3 w-3" />
+                            {{ primaryRole.label }}
+                        </span>
+                        <span v-for="role in userRoles.filter(r => r !== primaryRole.label.toLowerCase())" :key="role"
+                              class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full capitalize">
+                            {{ role }}
+                        </span>
+                    </div>
+                </div>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out" @click="showingNavigationDropdown = ! showingNavigationDropdown">
-                                <svg
-                                    class="size-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{'hidden': showingNavigationDropdown, 'inline-flex': ! showingNavigationDropdown }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{'hidden': ! showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
+                <!-- Navigation -->
+                <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    <Link
+                        v-for="item in navItems"
+                        :key="item.label"
+                        :href="route(item.route)"
+                        :class="[
+                            item.active
+                                ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent',
+                            'group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg border transition-all'
+                        ]"
+                    >
+                        <component :is="item.icon" :class="[item.active ? 'text-cyan-600' : 'text-gray-400 group-hover:text-gray-600']" class="h-5 w-5 shrink-0 transition-colors" />
+                        <span class="flex-1">{{ item.label }}</span>
+                        <span v-if="item.badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-400 uppercase">
+                            {{ item.badge }}
+                        </span>
+                    </Link>
+                </nav>
+
+                <!-- Bottom: Home + Logout -->
+                <div class="px-3 py-4 border-t border-gray-100 space-y-1">
+                    <Link href="/"
+                          class="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all">
+                        <Home class="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                        Back to Store
+                    </Link>
+                    <button @click="logout"
+                            class="w-full group flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all">
+                        <LogOut class="h-5 w-5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ═══════════════════════════════════════ -->
+            <!-- MOBILE SIDEBAR OVERLAY                  -->
+            <!-- ═══════════════════════════════════════ -->
+            <Teleport to="body">
+                <Transition name="fade">
+                    <div v-if="sidebarOpen" class="fixed inset-0 bg-black/40 z-40 lg:hidden" @click="sidebarOpen = false"></div>
+                </Transition>
+                <Transition name="slide">
+                    <aside v-if="sidebarOpen" class="fixed inset-y-0 left-0 w-72 bg-white z-50 lg:hidden shadow-2xl flex flex-col">
+                        <!-- Close -->
+                        <div class="h-16 flex items-center justify-between px-5 border-b border-gray-100">
+                            <Link href="/" class="flex items-center gap-2">
+                                <ShoppingBag class="h-6 w-6 text-cyan-600" />
+                                <span class="text-lg font-black tracking-tight">
+                                    <span class="text-cyan-600">Sari</span><span class="text-gray-900">Sari</span><span class="text-gray-300">.ph</span>
+                                </span>
+                            </Link>
+                            <button @click="sidebarOpen = false" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400">
+                                <X class="h-5 w-5" />
                             </button>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
-                    <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200">
-                        <div class="flex items-center px-4">
-                            <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 me-3">
-                                <img class="size-10 rounded-full object-cover" :src="$page.props.auth.user.profile_photo_url" :alt="$page.props.auth.user.name">
-                            </div>
-
-                            <div>
-                                <div class="font-medium text-base text-gray-800">
-                                    {{ $page.props.auth.user.name }}
+                        <!-- User card mobile -->
+                        <div class="px-4 py-4 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-cyan-50 flex items-center justify-center">
+                                    <User class="h-5 w-5 text-cyan-600" />
                                 </div>
-                                <div class="font-medium text-sm text-gray-500">
-                                    {{ $page.props.auth.user.email }}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">{{ userName }}</p>
+                                    <span :class="primaryRole.color" class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border mt-0.5">
+                                        <Shield class="h-2.5 w-2.5" />
+                                        {{ primaryRole.label }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.show')" :active="route().current('profile.show')">
-                                Profile
-                            </ResponsiveNavLink>
+                        <!-- Mobile nav -->
+                        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                            <Link
+                                v-for="item in navItems"
+                                :key="item.label"
+                                :href="route(item.route)"
+                                @click="sidebarOpen = false"
+                                :class="[
+                                    item.active
+                                        ? 'bg-cyan-50 text-cyan-700'
+                                        : 'text-gray-600 hover:bg-gray-50',
+                                    'flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all'
+                                ]"
+                            >
+                                <component :is="item.icon" :class="item.active ? 'text-cyan-600' : 'text-gray-400'" class="h-5 w-5 shrink-0" />
+                                {{ item.label }}
+                            </Link>
+                        </nav>
 
-                            <ResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
-                                API Tokens
-                            </ResponsiveNavLink>
+                        <div class="px-3 py-4 border-t border-gray-100 space-y-1">
+                            <Link href="/" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg">
+                                <Home class="h-5 w-5 text-gray-400" /> Back to Store
+                            </Link>
+                            <button @click="logout" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg">
+                                <LogOut class="h-5 w-5 text-gray-400" /> Sign Out
+                            </button>
+                        </div>
+                    </aside>
+                </Transition>
+            </Teleport>
 
-                            <!-- Authentication -->
-                            <form method="POST" @submit.prevent="logout">
-                                <ResponsiveNavLink as="button">
-                                    Log Out
-                                </ResponsiveNavLink>
-                            </form>
-
-                            <!-- Team Management -->
-                            <template v-if="$page.props.jetstream.hasTeamFeatures">
-                                <div class="border-t border-gray-200" />
-
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    Manage Team
-                                </div>
-
-                                <!-- Team Settings -->
-                                <ResponsiveNavLink :href="route('teams.show', $page.props.auth.user.current_team)" :active="route().current('teams.show')">
-                                    Team Settings
-                                </ResponsiveNavLink>
-
-                                <ResponsiveNavLink v-if="$page.props.jetstream.canCreateTeams" :href="route('teams.create')" :active="route().current('teams.create')">
-                                    Create New Team
-                                </ResponsiveNavLink>
-
-                                <!-- Team Switcher -->
-                                <template v-if="$page.props.auth.user.all_teams.length > 1">
-                                    <div class="border-t border-gray-200" />
-
-                                    <div class="block px-4 py-2 text-xs text-gray-400">
-                                        Switch Teams
-                                    </div>
-
-                                    <template v-for="team in $page.props.auth.user.all_teams" :key="team.id">
-                                        <form @submit.prevent="switchToTeam(team)">
-                                            <ResponsiveNavLink as="button">
-                                                <div class="flex items-center">
-                                                    <svg v-if="team.id == $page.props.auth.user.current_team_id" class="me-2 size-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <div>{{ team.name }}</div>
-                                                </div>
-                                            </ResponsiveNavLink>
-                                        </form>
-                                    </template>
-                                </template>
-                            </template>
+            <!-- ═══════════════════════════════════════ -->
+            <!-- MAIN CONTENT AREA                       -->
+            <!-- ═══════════════════════════════════════ -->
+            <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+                <!-- Top bar -->
+                <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
+                    <div class="flex items-center gap-3">
+                        <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+                            <Menu class="h-5 w-5" />
+                        </button>
+                        <div v-if="$slots.header">
+                            <slot name="header" />
                         </div>
                     </div>
-                </div>
-            </nav>
 
-            <!-- Page Heading -->
-            <header v-if="$slots.header" class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
+                    <div class="flex items-center gap-3">
+                        <!-- Notification placeholder -->
+                        <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 relative">
+                            <Bell class="h-5 w-5" />
+                            <span v-if="isAdmin" class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></span>
+                        </button>
 
-            <!-- Page Content -->
-            <main>
-                <slot />
-            </main>
+                        <!-- Admin indicator in topbar -->
+                        <span v-if="isAdmin" class="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 border border-red-200">
+                            <Shield class="h-3.5 w-3.5" />
+                            Admin Mode
+                        </span>
+
+                        <!-- User avatar dropdown (mobile-friendly) -->
+                        <Link :href="route('profile.show')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-50">
+                            <img
+                                v-if="$page.props.jetstream?.managesProfilePhotos && userPhoto"
+                                :src="userPhoto" :alt="userName"
+                                class="h-8 w-8 rounded-full object-cover"
+                            />
+                            <div v-else class="h-8 w-8 rounded-full bg-cyan-50 flex items-center justify-center">
+                                <User class="h-4 w-4 text-cyan-600" />
+                            </div>
+                        </Link>
+                    </div>
+                </header>
+
+                <!-- Page content -->
+                <main class="flex-1 p-4 sm:p-6 lg:p-8">
+                    <slot />
+                </main>
+            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-enter-active, .slide-leave-active { transition: transform 0.25s ease; }
+.slide-enter-from, .slide-leave-to { transform: translateX(-100%); }
+</style>

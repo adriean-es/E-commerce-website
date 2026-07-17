@@ -15,9 +15,24 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call(RbacSeeder::class);
+
+        $admin = User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@sarisari.ph',
         ]);
+        $admin->assignRole('admin');
+
+        $vendor = User::factory()->create([
+            'name' => 'Test Vendor',
+            'email' => 'vendor@sarisari.ph',
+        ]);
+        $vendor->assignRole('vendor');
+
+        $customer = User::factory()->create([
+            'name' => 'Test Customer',
+            'email' => 'customer@sarisari.ph',
+        ]);
+        $customer->assignRole('customer');
     }
 }

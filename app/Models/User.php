@@ -66,4 +66,37 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * The roles that belong to the user.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    /**
+     * Assign a role to the user.
+     */
+    public function assignRole(string $role): void
+    {
+        $roleModel = Role::where('name', $role)->firstOrFail();
+        $this->roles()->syncWithoutDetaching([$roleModel->id]);
+    }
+
+    /**
+     * Check if user has a specific permission.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        return app(\App\Services\AccessControlService::class)->hasPermission($this, $permission);
+    }
 }
