@@ -1,0 +1,128 @@
+================================================================================
+  MODULE 3: SUPPLIER & PROCUREMENT FLOWCHART — TEXT VERSION
+  Multi-Vendor E-Commerce Platform
+================================================================================
+
+LEGEND:
+  ( TERMINAL )      = Start / End of a process
+  [ PROCESS ]       = An internal action, calculation, or database operation
+  / INPUT/OUTPUT /  = Data entry by user (Input) or displaying info/screens (Output)
+  < DECISION >      = A conditional check (Diamond)
+  ----              = Normal flow arrow
+  - - -             = Alternate path / Error loop
+
+
+================================================================================
+  FLOW 1: SELLER INVITES NEW SUPPLIER
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Seller navigates to   /
+                 /      "Invite Supplier"     /
+                              |
+                              v
+                 / I/O: Seller enters email   /
+                              |
+                              v
+                 [ PROCESS: Generate token &  ]
+                 [ create `supplier_invitations`]
+                              |
+                              v
+                 [ PROCESS: Dispatch Job to   ]
+                 [ Send Invitation Email      ]
+                              |
+                              v
+                 / I/O: Supplier receives     /
+                 /      email & clicks link   /
+                              |
+                              v
+                 / I/O: Supplier Registration /
+                 /      Form                  /
+                              |
+                              v
+                 [ PROCESS: Create `users` &  ]
+                 [ `supplier_profiles`        ]
+                              |
+                              v
+                 [ PROCESS: Assign `supplier` ]
+                 [ Role                       ]
+                              |
+                              v
+                 [ PROCESS: Insert into       ]
+                 [ `seller_suppliers` pivot   ]
+                              |
+                              v
+                 [ PROCESS: Notify Seller     ]
+                              |
+                              v
+                     ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 2: PURCHASE ORDER LIFECYCLE
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Seller navigates to   /
+                 /      "Create PO"           /
+                              |
+                              v
+                 / I/O: Seller selects        /
+                 /      Supplier & Variants   /
+                              |
+                              v
+                 [ PROCESS: Save to           ]
+                 [ `purchase_orders` (draft)  ]
+                              |
+                              v
+            +----< DECISION: Send to Supplier?>----+
+            |                                      |
+           NO                                     YES
+            |                                      |
+            v                                      v
+   ( TERMINAL: END )                [ PROCESS: Update status to 'sent' ]
+                                                   |
+                                                   v
+                                    [ PROCESS: Log to `po_status_logs` ]
+                                                   |
+                                                   v
+                                    [ PROCESS: Notify Supplier         ]
+                                                   |
+                                                   v
+                                    / I/O: Supplier views PO Dashboard /
+                                                   |
+                                                   v
+                                    / I/O: Supplier reviews PO items   /
+                                                   |
+                                                   v
+                                    +----< DECISION: Acknowledge? >----+
+                                    |                                  |
+                                 REJECT                             ACKNOWLEDGE
+                                    |                                  |
+                                    v                                  v
+                    [ PROCESS: Update status to 'cancelled']   [ PROCESS: Update status to 'acknowledged' ]
+                                                                               |
+                                                                               v
+                                                               [ PROCESS: Supplier prepares goods ]
+                                                                               |
+                                                                               v
+                                                               +----< DECISION: Approve PO? >----+
+                                                                               |
+                                                                            APPROVE
+                                                                               |
+                                                                               v
+                                                               [ PROCESS: Update status to 'approved' ]
+                                                                               |
+                                                                               v
+                                                               [ PROCESS: Log to `po_status_logs` ]
+                                                                               |
+                                                                               v
+                                                               [ PROCESS: Notify Seller (Inventory Mgr)]
+                                                                               |
+                                                                               v
+                                                                       ( TERMINAL: END )
+================================================================================

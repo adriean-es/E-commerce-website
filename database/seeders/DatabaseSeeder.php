@@ -27,7 +27,23 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test Vendor',
             'email' => 'vendor@sarisari.ph',
         ]);
-        $vendor->assignRole('vendor');
+        $vendor->assignRole('seller');
+
+        // ---> NEW: Create a test shop for the seller
+        \App\Models\Shop::create([
+            'user_id' => $vendor->id,
+            'name' => 'My Awesome Sari-Sari Store',
+            'slug' => 'my-awesome-store',
+            'status' => 'active',
+        ]);
+
+        // ---> NEW: Create a test category so you can select it in the form
+        \App\Models\Category::create([
+            'name' => 'Clothing',
+            'slug' => 'clothing',
+            'description' => 'Apparel and accessories',
+        ]);
+
 
         $customer = User::factory()->create([
             'name' => 'Test Customer',

@@ -1,0 +1,45 @@
+# Module 3 Walkthrough: Supplier & Procurement
+
+Awesome work! We have fully implemented **Module 3**. Because there were 7 different UI files to create, I went ahead and **automatically generated and saved them directly to your project folders** to save you the hassle of copy-pasting everything!
+
+> [!TIP]
+> The pages I built for you feature sleek gradients, glassmorphism (`backdrop-blur`), and interactive micro-animations (like hover scales) to give your application a premium, high-end feel!
+
+## What was built:
+1. **Migrations & Models**: The entire database schema to handle Suppliers, Invitations, and Purchase Orders.
+2. **Controllers**: 
+   - `Seller\SupplierController` & `Seller\PurchaseOrderController`
+   - `Supplier\RegistrationController`, `DashboardController`, & `PurchaseOrderController`
+3. **7 Vue Pages**: 
+   - Seller: `Suppliers/Index.vue`, `PurchaseOrders/Index.vue`, `PurchaseOrders/Create.vue`
+   - Supplier: `Auth/Register.vue`, `Dashboard.vue`, `PurchaseOrders/Index.vue`, `PurchaseOrders/Show.vue`
+
+## How to Test the Complete Flow 
+
+### Step 1: Invite a Supplier (As the Vendor)
+1. Ensure your Vite server is running (`npm run dev`).
+2. Log in as your vendor account (`vendor@sarisari.ph`).
+3. Navigate to **http://localhost:8000/seller/suppliers** in your browser.
+4. Type in an email (e.g., `distributor@example.com`) and click **Send Invitation**.
+5. You will see the Pending Invitation appear below. Click the **"Simulation Link"** on that invitation!
+
+### Step 2: Register the Supplier (As the Supplier)
+1. The Simulation Link will take you to the new Supplier Registration screen.
+2. Fill out the details (Company Name: "Mega Supply Co.", Name: "Distributor", Password: "password").
+3. Click **Create Supplier Account**. You can now log into this new account!
+
+### Step 3: Create a Purchase Order (As the Vendor)
+1. Go back to your vendor account (`vendor@sarisari.ph`).
+2. Navigate to **http://localhost:8000/seller/purchase-orders**.
+3. Click **Create New PO**.
+4. Select "Mega Supply Co." as the supplier, fill out an address, and add some line items (select the products you made in Module 2). 
+5. Click **Send to Supplier**!
+
+### Step 4: Approve the PO (As the Supplier)
+1. Log in as the new supplier account (`distributor@example.com`).
+2. You will be greeted by the stunning **Supplier Dashboard**.
+3. Click on the PO under "Recent Purchase Orders".
+4. You will see the full PO review screen. Click **Approve & Prepare Goods**.
+5. The PO status changes to `APPROVED` and the audit trail logs the change!
+
+Try it out! Let me know if everything works perfectly and when you are ready to tackle **Module 4: Inventory Management**!

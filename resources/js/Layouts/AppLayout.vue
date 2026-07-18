@@ -31,7 +31,7 @@ const sidebarOpen = ref(false);
 
 const userRoles = computed(() => page.props.userRoles || []);
 const isAdmin = computed(() => userRoles.value.includes('admin'));
-const isVendor = computed(() => userRoles.value.includes('vendor'));
+const isVendor = computed(() => userRoles.value.includes('seller'));
 const userName = computed(() => page.props.auth?.user?.name || 'User');
 const userEmail = computed(() => page.props.auth?.user?.email || '');
 const userPhoto = computed(() => page.props.auth?.user?.profile_photo_url || null);
@@ -48,10 +48,11 @@ const navItems = computed(() => {
         { label: 'Profile', icon: User, route: 'profile.show', active: route().current('profile.show') },
     ];
 
-    if (isAdmin.value) {
+        if (isAdmin.value) {
         items.push(
             { label: 'Manage Users', icon: Users, route: 'dashboard', active: false, badge: 'Admin' },
-            { label: 'Manage Products', icon: Package, route: 'dashboard', active: false, badge: 'Admin' },
+            // ---> NEW: Admin Approval Route
+            { label: 'Catalog Approvals', icon: Package, route: 'admin.catalog.approvals', active: route().current('admin.catalog.approvals'), badge: 'Admin' },
             { label: 'Analytics', icon: BarChart3, route: 'dashboard', active: false, badge: 'Admin' },
         );
     }
@@ -59,7 +60,8 @@ const navItems = computed(() => {
     if (isVendor.value) {
         items.push(
             { label: 'My Store', icon: Store, route: 'dashboard', active: false, badge: 'Vendor' },
-            { label: 'My Products', icon: Package, route: 'dashboard', active: false, badge: 'Vendor' },
+            // ---> NEW: Seller Products Route
+            { label: 'My Products', icon: Package, route: 'seller.products.index', active: route().current('seller.products.*'), badge: 'Vendor' },
             { label: 'Orders', icon: ShoppingBag, route: 'dashboard', active: false, badge: 'Vendor' },
         );
     }
