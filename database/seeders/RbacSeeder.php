@@ -14,6 +14,7 @@ class RbacSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $vendor = Role::firstOrCreate(['name' => 'seller']);
         $customer = Role::firstOrCreate(['name' => 'customer']);
+        $supplier = Role::firstOrCreate(['name' => 'supplier']);
 
         // ── Permissions ────────────────────────────────
         $permissions = [

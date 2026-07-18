@@ -55,7 +55,7 @@ const getStatusColor = (status) => {
           <!-- Left Column: Details & Items -->
           <div class="lg:col-span-2 space-y-6">
             
-            <Card class="shadow-md border-0 bg-white">
+            <Card class="shadow-sm border border-gray-200/60 bg-white">
               <CardHeader class="border-b border-gray-100 bg-gray-50/50">
                 <CardTitle class="text-lg text-gray-800">Order Information</CardTitle>
               </CardHeader>
@@ -68,7 +68,7 @@ const getStatusColor = (status) => {
                   </div>
                   <div>
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Expected Delivery</p>
-                    <p class="font-medium text-gray-900">{{ purchaseOrder.expected_delivery_date || 'Not specified' }}</p>
+                    <p class="font-medium text-gray-900">{{ purchaseOrder.expected_delivery_date ? new Date(purchaseOrder.expected_delivery_date).toLocaleDateString() : 'Not specified' }}</p>
                   </div>
                   <div class="col-span-2">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Delivery Address</p>
@@ -78,7 +78,7 @@ const getStatusColor = (status) => {
               </CardContent>
             </Card>
 
-            <Card class="shadow-md border-0 bg-white">
+            <Card class="shadow-sm border border-gray-200/60 bg-white">
               <CardHeader class="border-b border-gray-100 bg-gray-50/50">
                 <CardTitle class="text-lg text-gray-800">Requested Items</CardTitle>
               </CardHeader>
@@ -86,27 +86,27 @@ const getStatusColor = (status) => {
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Product (SKU)</th>
-                      <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Qty</th>
-                      <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Unit Cost</th>
-                      <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total</th>
+                      <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Product (SKU)</th>
+                      <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                      <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Unit Cost</th>
+                      <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
-                    <tr v-for="item in purchaseOrder.items" :key="item.id">
+                    <tr v-for="item in purchaseOrder.items" :key="item.id" class="hover:bg-gray-50/50 transition-colors">
                       <td class="px-6 py-4 text-sm font-medium text-gray-900">
                         {{ item.product_variant?.product?.name }} <span class="text-gray-400 ml-1">({{ item.product_variant?.sku }})</span>
                       </td>
                       <td class="px-6 py-4 text-sm text-gray-900 text-center font-bold">{{ item.quantity_ordered }}</td>
                       <td class="px-6 py-4 text-sm text-gray-500 text-right">₱{{ parseFloat(item.unit_cost).toFixed(2) }}</td>
-                      <td class="px-6 py-4 text-sm font-bold text-indigo-600 text-right">₱{{ parseFloat(item.total_cost).toFixed(2) }}</td>
+                      <td class="px-6 py-4 text-sm font-bold text-cyan-600 text-right">₱{{ parseFloat(item.total_cost).toFixed(2) }}</td>
                     </tr>
                   </tbody>
                 </table>
               </CardContent>
             </Card>
 
-            <Card class="shadow-md border-0 bg-white">
+            <Card class="shadow-sm border border-gray-200/60 bg-white">
               <CardHeader class="border-b border-gray-100 bg-gray-50/50">
                 <CardTitle class="text-lg text-gray-800">Audit Trail</CardTitle>
               </CardHeader>
@@ -114,10 +114,10 @@ const getStatusColor = (status) => {
                 <ul class="space-y-4">
                   <li v-for="log in purchaseOrder.status_logs" :key="log.id" class="flex gap-4">
                     <div class="mt-1">
-                      <div class="h-2 w-2 rounded-full bg-indigo-500"></div>
+                      <div class="h-2 w-2 rounded-full bg-cyan-500"></div>
                     </div>
                     <div>
-                      <p class="text-sm font-medium text-gray-900">Status changed from <b>{{ log.from_status }}</b> to <b>{{ log.to_status }}</b></p>
+                      <p class="text-sm font-medium text-gray-900">Status changed from <b class="capitalize">{{ log.from_status }}</b> to <b class="capitalize">{{ log.to_status }}</b></p>
                       <p class="text-xs text-gray-500">{{ new Date(log.created_at).toLocaleString() }} by {{ log.changer?.name }}</p>
                       <p v-if="log.notes" class="text-sm text-gray-600 mt-1 italic">"{{ log.notes }}"</p>
                     </div>
@@ -130,31 +130,32 @@ const getStatusColor = (status) => {
 
           <!-- Right Column: Action Box -->
           <div class="space-y-6">
-            <Card class="shadow-xl border-t-4 border-indigo-500 bg-white sticky top-6">
-              <CardHeader>
+            <Card class="shadow-sm border border-gray-200/60 bg-white overflow-hidden sticky top-6">
+              <div class="h-1 w-full bg-cyan-600"></div>
+              <CardHeader class="pt-5">
                 <CardTitle class="text-lg text-gray-800">Supplier Actions</CardTitle>
               </CardHeader>
               <CardContent class="p-6 space-y-6">
                 
                 <div class="flex justify-between items-center pb-4 border-b border-gray-100">
                   <span class="text-lg font-bold text-gray-900">Total Value</span>
-                  <span class="text-2xl font-black text-indigo-600">₱{{ parseFloat(purchaseOrder.total_amount).toFixed(2) }}</span>
+                  <span class="text-2xl font-black text-cyan-600 tracking-tight">₱{{ parseFloat(purchaseOrder.total_amount).toFixed(2) }}</span>
                 </div>
 
                 <div v-if="['sent', 'acknowledged'].includes(purchaseOrder.status)">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Notes to Seller (Optional)</label>
-                  <textarea v-model="form.supplier_notes" rows="3" class="w-full border-gray-300 focus:border-indigo-500 rounded-md text-sm mb-4" placeholder="E.g., We can deliver this by next Tuesday..."></textarea>
+                  <textarea v-model="form.supplier_notes" rows="3" class="w-full border-gray-300 focus:border-cyan-500 focus:ring-cyan-500 rounded-md shadow-sm text-sm mb-4" placeholder="E.g., We can deliver this by next Tuesday..."></textarea>
                   
                   <div class="space-y-3">
-                    <Button v-if="purchaseOrder.status === 'sent'" @click="updateStatus('acknowledged')" :disabled="form.processing" variant="outline" class="w-full border-purple-200 text-purple-700 hover:bg-purple-50 h-11">
+                    <Button v-if="purchaseOrder.status === 'sent'" @click="updateStatus('acknowledged')" :disabled="form.processing" variant="outline" class="w-full border-cyan-200 text-cyan-700 hover:bg-cyan-50 h-11 transition-colors">
                       Acknowledge PO
                     </Button>
                     
-                    <Button @click="updateStatus('approved')" :disabled="form.processing" class="w-full bg-green-600 hover:bg-green-700 text-white shadow-md transition-transform transform hover:scale-105 h-11">
+                    <Button @click="updateStatus('approved')" :disabled="form.processing" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all h-11 text-sm font-medium">
                       Approve & Prepare Goods
                     </Button>
                     
-                    <Button @click="updateStatus('cancelled')" :disabled="form.processing" variant="ghost" class="w-full text-red-500 hover:text-red-700 hover:bg-red-50 h-11">
+                    <Button @click="updateStatus('cancelled')" :disabled="form.processing" variant="ghost" class="w-full text-red-500 hover:text-red-700 hover:bg-red-50 h-11 transition-colors">
                       Reject / Cancel PO
                     </Button>
                   </div>

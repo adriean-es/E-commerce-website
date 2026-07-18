@@ -32,6 +32,7 @@ const sidebarOpen = ref(false);
 const userRoles = computed(() => page.props.userRoles || []);
 const isAdmin = computed(() => userRoles.value.includes('admin'));
 const isVendor = computed(() => userRoles.value.includes('seller'));
+const isSupplier = computed(() => userRoles.value.includes('supplier'));
 const userName = computed(() => page.props.auth?.user?.name || 'User');
 const userEmail = computed(() => page.props.auth?.user?.email || '');
 const userPhoto = computed(() => page.props.auth?.user?.profile_photo_url || null);
@@ -39,6 +40,7 @@ const userPhoto = computed(() => page.props.auth?.user?.profile_photo_url || nul
 const primaryRole = computed(() => {
     if (isAdmin.value) return { label: 'Admin', color: 'bg-red-100 text-red-700 border-red-200' };
     if (isVendor.value) return { label: 'Vendor', color: 'bg-amber-100 text-amber-700 border-amber-200' };
+    if (isSupplier.value) return { label: 'Supplier', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' };
     return { label: 'Customer', color: 'bg-cyan-100 text-cyan-700 border-cyan-200' };
 });
 
@@ -48,10 +50,9 @@ const navItems = computed(() => {
         { label: 'Profile', icon: User, route: 'profile.show', active: route().current('profile.show') },
     ];
 
-        if (isAdmin.value) {
+    if (isAdmin.value) {
         items.push(
             { label: 'Manage Users', icon: Users, route: 'dashboard', active: false, badge: 'Admin' },
-            // ---> NEW: Admin Approval Route
             { label: 'Catalog Approvals', icon: Package, route: 'admin.catalog.approvals', active: route().current('admin.catalog.approvals'), badge: 'Admin' },
             { label: 'Analytics', icon: BarChart3, route: 'dashboard', active: false, badge: 'Admin' },
         );
@@ -60,9 +61,18 @@ const navItems = computed(() => {
     if (isVendor.value) {
         items.push(
             { label: 'My Store', icon: Store, route: 'dashboard', active: false, badge: 'Vendor' },
-            // ---> NEW: Seller Products Route
             { label: 'My Products', icon: Package, route: 'seller.products.index', active: route().current('seller.products.*'), badge: 'Vendor' },
+            { label: 'Inventory', icon: FileText, route: 'seller.inventory.index', active: route().current('seller.inventory.*'), badge: 'Vendor' },
             { label: 'Orders', icon: ShoppingBag, route: 'dashboard', active: false, badge: 'Vendor' },
+            { label: 'Suppliers', icon: Users, route: 'seller.suppliers.index', active: route().current('seller.suppliers.*'), badge: 'Vendor' },
+            { label: 'Purchase Orders', icon: FileText, route: 'seller.purchase-orders.index', active: route().current('seller.purchase-orders.*'), badge: 'Vendor' },
+        );
+    }
+
+    if (isSupplier.value) {
+        items.push(
+            { label: 'Supplier Portal', icon: LayoutDashboard, route: 'supplier.dashboard', active: route().current('supplier.dashboard'), badge: 'Supplier' },
+            { label: 'PO Fulfillment', icon: FileText, route: 'supplier.purchase-orders.index', active: route().current('supplier.purchase-orders.*'), badge: 'Supplier' },
         );
     }
 
@@ -238,11 +248,11 @@ const logout = () => {
             <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
                 <!-- Top bar -->
                 <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-1">
                         <button @click="sidebarOpen = true" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500">
                             <Menu class="h-5 w-5" />
                         </button>
-                        <div v-if="$slots.header">
+                        <div v-if="$slots.header" class="flex-1">
                             <slot name="header" />
                         </div>
                     </div>
@@ -273,6 +283,20 @@ const logout = () => {
                         </Link>
                     </div>
                 </header>
+
+                <!-- Flash Messages -->
+                <div v-if="$page.props.flash?.success" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+                    <div class="bg-green-50 border border-green-200 text-green-800 p-4 rounded-md text-sm flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>{{ $page.props.flash.success }}</span>
+                    </div>
+                </div>
+                <div v-if="$page.props.flash?.error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+                    <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-md text-sm flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>{{ $page.props.flash.error }}</span>
+                    </div>
+                </div>
 
                 <!-- Page content -->
                 <main class="flex-1 p-4 sm:p-6 lg:p-8">

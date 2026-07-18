@@ -31,11 +31,11 @@ const getStatusColor = (status) => {
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <Card class="shadow-xl rounded-2xl overflow-hidden border-0 bg-white/80 backdrop-blur-xl">
+        <Card class="shadow-sm border border-gray-200/60 bg-white">
           <CardContent class="p-0">
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gradient-to-r from-gray-50 to-gray-100/50">
+                <thead class="bg-gray-50">
                   <tr>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">PO Number</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Seller / Shop</th>
@@ -51,9 +51,9 @@ const getStatusColor = (status) => {
                       <p class="text-gray-500 text-lg font-medium">No Purchase Orders received yet.</p>
                     </td>
                   </tr>
-                  <tr v-for="po in purchaseOrders" :key="po.id" class="hover:bg-indigo-50/40 transition-colors group">
+                  <tr v-for="po in purchaseOrders" :key="po.id" class="hover:bg-gray-50/50 transition-colors group">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="font-bold text-indigo-600">{{ po.po_number }}</span>
+                      <span class="font-bold text-cyan-600">{{ po.po_number }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="text-sm font-semibold text-gray-900">{{ po.shop?.name }}</div>
@@ -71,7 +71,7 @@ const getStatusColor = (status) => {
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link :href="route('supplier.purchase-orders.show', po.id)" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
+                      <Link :href="route('supplier.purchase-orders.show', po.id)" class="text-cyan-700 hover:text-cyan-900 font-bold bg-cyan-50 px-3 py-1.5 rounded-lg hover:bg-cyan-100 transition-colors border border-cyan-100">
                         Review &rarr;
                       </Link>
                     </td>

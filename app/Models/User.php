@@ -102,6 +102,11 @@ class User extends Authenticatable
         return app(\App\Services\AccessControlService::class)->hasPermission($this, $permission);
     }
 
+    public function shop()
+    {
+        return $this->hasOne(Shop::class);
+    }
+
     public function supplierProfile()
     {
         return $this->hasOne(SupplierProfile::class);

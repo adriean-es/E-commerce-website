@@ -1,0 +1,187 @@
+================================================================================
+  MODULE 4: INVENTORY MANAGEMENT FLOWCHART — TEXT VERSION
+  Multi-Vendor E-Commerce Platform
+================================================================================
+
+LEGEND:
+  ( TERMINAL )      = Start / End of a process
+  [ PROCESS ]       = An internal action, calculation, or database operation
+  / INPUT/OUTPUT /  = Data entry by user (Input) or displaying info/screens (Output)
+  < DECISION >      = A conditional check (Diamond)
+  ----              = Normal flow arrow
+  - - -             = Alternate path / Error loop
+
+  ⚠ SECURITY RULE: `inventories.quantity_on_hand` is NEVER directly editable.
+     All stock changes MUST go through `InventoryService::recordTransaction()`.
+
+
+================================================================================
+  FLOW 1: STOCK RECEIPT — Supplier Delivery Arrives (Scenario 4-A)
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Seller navigates to      /
+                 /   Inventory > Receive Stock    /
+                              |
+                              v
+                 [ PROCESS: Fetch all POs with   ]
+                 [ status = 'approved'           ]
+                              |
+                              v
+                 / I/O: Seller selects PO        /
+                 /   (e.g. PO-2025-00001)        /
+                              |
+                              v
+                 / I/O: System displays          /
+                 /   expected items from PO:     /
+                 /   50x Red Shirt XL            /
+                 /   30x Blue Shirt M            /
+                              |
+                              v
+                 / I/O: Seller inputs received   /
+                 /   quantities per item:        /
+                 /   Red XL: 50 good, 0 damaged  /
+                 /   Blue M:  28 good, 2 damaged /
+                              |
+                              v
+                 [ PROCESS: BEGIN DB TRANSACTION ]
+                              |
+                              v
+                 [ PROCESS: Create               ]
+                 [ `stock_receipts` record        ]
+                 [ (status = 'confirmed')         ]
+                              |
+                              v
+                 [ PROCESS: For EACH line item:  ]
+                 [   1. Insert `stock_receipt_items`  ]
+                 [   2. Update `purchase_order_items` ]
+                 [      .quantity_received += good    ]
+                              |
+                              v
+                 [ PROCESS: For EACH accepted qty:]
+                 [ Call InventoryService::         ]
+                 [   recordTransaction()           ]
+                 [   - type: PURCHASE_RECEIPT       ]
+                 [   - qty_change: +good_qty        ]
+                 [   - qty_before: current stock    ]
+                 [   - qty_after: stock + good_qty  ]
+                 [   Updates inventories.qty_on_hand ]
+                              |
+                              v
+            +----< DECISION: All PO items      >----+
+            |      fully received?                   |
+            |                                        |
+           NO                                       YES
+            |                                        |
+            v                                        v
+ [ PROCESS: PO status ->         ]    [ PROCESS: PO status ->        ]
+ [ 'partially_received'          ]    [ 'fully_received'             ]
+            |                                        |
+            +----------------+  +--------------------+
+                             |  |
+                             v  v
+                 [ PROCESS: COMMIT DB TRANSACTION ]
+                              |
+                              v
+            +----< DECISION: qty_on_hand       >----+
+            |      <= reorder_point?                 |
+            |                                        |
+           YES                                      NO
+            |                                        |
+            v                                        v
+  [ PROCESS: Trigger low-stock   ]          ( TERMINAL: END )
+  [ alert notification           ]
+            |
+            v
+     ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 2: MANUAL ADJUSTMENT — Physical Count Discrepancy (Scenario 4-B)
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Staff navigates to       /
+                 /   Inventory > Manual Adjust    /
+                              |
+                              v
+                 / I/O: Staff selects variant    /
+                 /   and enters:                 /
+                 /   Type: SHORTAGE              /
+                 /   Quantity: -3                /
+                 /   Reason: "Physical count..." /
+                 /   Evidence: [photo upload]    /
+                              |
+                              v
+                 [ PROCESS: Create               ]
+                 [ `inventory_adjustments` record ]
+                 [ (status = 'pending')          ]
+                              |
+                              v
+                 [ PROCESS: Notify Seller/Manager]
+                 [ of pending adjustment request ]
+                              |
+                              v
+                 / I/O: Seller reviews request   /
+                 /   with evidence and reason     /
+                              |
+                              v
+            +----< DECISION: Approve? >---------+
+            |                                    |
+         REJECT                               APPROVE
+            |                                    |
+            v                                    v
+  [ PROCESS: Update status     ]    [ PROCESS: Call InventoryService:: ]
+  [ to 'rejected'              ]    [   applyAdjustment()              ]
+  [ Record review_notes        ]    [   - Insert inventory_transactions ]
+            |                       [     type: ADJUSTMENT_DECREASE     ]
+            v                       [   - Update qty_on_hand -= 3      ]
+     ( TERMINAL: END )              [   - Update status to 'approved'  ]
+                                                 |
+                                                 v
+                                    [ PROCESS: Full audit trail:      ]
+                                    [ adjustment -> transaction ->    ]
+                                    [ inventory record all linked     ]
+                                                 |
+                                                 v
+                                          ( TERMINAL: END )
+
+
+================================================================================
+  FLOW 3: INVENTORY DASHBOARD — View Stock Levels
+================================================================================
+
+                     ( TERMINAL: START )
+                              |
+                              v
+                 / I/O: Seller navigates to      /
+                 /   Inventory Dashboard          /
+                              |
+                              v
+                 [ PROCESS: Query `inventories`  ]
+                 [ JOIN `product_variants` +      ]
+                 [ `products` for this shop       ]
+                              |
+                              v
+                 / I/O: Display table:           /
+                 / Product | Variant | On Hand   /
+                 / | Reserved | Available        /
+                 / | Location | Reorder Point    /
+                              |
+                              v
+            +----< DECISION: View details? >----+
+            |                                    |
+           YES                                  NO
+            |                                    |
+            v                                    v
+  / I/O: Show transaction     /          ( TERMINAL: END )
+  / history for that variant  /
+            |
+            v
+     ( TERMINAL: END )
+
+================================================================================

@@ -1,10 +1,20 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm, Head } from '@inertiajs/vue3';
+import { useForm, Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/Components/ui/table';
+import { Plus } from 'lucide-vue-next';
 
 const props = defineProps({
   suppliers: Array,
@@ -24,22 +34,22 @@ const submitInvite = () => {
 </script>
 
 <template>
-  <AppLayout title="My Suppliers">
+  <AppLayout title="Supplier Management">
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Supplier Management
-      </h2>
+      <div class="flex justify-between items-center w-full">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+          Supplier Management
+        </h2>
+      </div>
     </template>
 
     <div class="py-12">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
         
         <!-- Invite Supplier Section -->
-        <Card class="border-t-4 border-indigo-500 shadow-lg">
+        <Card>
           <CardHeader>
-            <CardTitle class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
-              Invite a New Supplier
-            </CardTitle>
+            <CardTitle>Invite a New Supplier</CardTitle>
           </CardHeader>
           <CardContent>
             <form @submit.prevent="submitInvite" class="flex flex-col md:flex-row gap-4 items-end">
@@ -48,62 +58,90 @@ const submitInvite = () => {
                 <Input v-model="form.email" type="email" placeholder="vendor@example.com" required />
                 <p v-if="form.errors.email" class="text-sm text-red-600 mt-1">{{ form.errors.email }}</p>
               </div>
-              <Button type="submit" :disabled="form.processing" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white transition-all transform hover:scale-105 shadow-md">
-                Send Invitation
+              <Button type="submit" :disabled="form.processing" class="w-full md:w-auto">
+                <Plus class="w-4 h-4 mr-2" /> Send Invitation
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Active Suppliers -->
-          <Card class="shadow-md border-0 bg-white/50 backdrop-blur-xl">
+          <Card>
             <CardHeader>
-              <CardTitle class="flex items-center gap-2 text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Active Suppliers
-              </CardTitle>
+              <CardTitle>Active Suppliers</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="suppliers.length === 0" class="text-gray-500 italic text-center py-4">
-                No active suppliers yet.
+              <div class="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead class="text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="supplier in suppliers" :key="supplier.id">
+                      <TableCell class="font-medium">{{ supplier.company_name }}</TableCell>
+                      <TableCell>{{ supplier.contact_person }}</TableCell>
+                      <TableCell class="text-right">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          ACTIVE
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow v-if="suppliers.length === 0">
+                      <TableCell colspan="3" class="h-24 text-center text-gray-500">
+                        No active suppliers yet.
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
-              <ul v-else class="space-y-3">
-                <li v-for="supplier in suppliers" :key="supplier.id" class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:bg-indigo-50 transition-colors">
-                  <div>
-                    <h4 class="font-bold text-gray-900">{{ supplier.company_name }}</h4>
-                    <p class="text-sm text-gray-500">{{ supplier.contact_person }} - {{ supplier.phone }}</p>
-                  </div>
-                  <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full border border-green-200">ACTIVE</span>
-                </li>
-              </ul>
             </CardContent>
           </Card>
 
           <!-- Pending Invitations -->
-          <Card class="shadow-md border-0 bg-white/50 backdrop-blur-xl">
+          <Card>
             <CardHeader>
-              <CardTitle class="flex items-center gap-2 text-gray-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Pending Invitations
-              </CardTitle>
+              <CardTitle>Pending Invitations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div v-if="invitations.length === 0" class="text-gray-500 italic text-center py-4">
-                No pending invitations.
+              <div class="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Sent On</TableHead>
+                      <TableHead class="text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="inv in invitations" :key="inv.id">
+                      <TableCell class="font-medium">
+                        {{ inv.invited_email }}
+                        <div class="mt-1">
+                          <a :href="`/supplier/register?token=${inv.token}`" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline">
+                            Open Registration Link ↗
+                          </a>
+                        </div>
+                      </TableCell>
+                      <TableCell>{{ new Date(inv.created_at).toLocaleDateString() }}</TableCell>
+                      <TableCell class="text-right">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          PENDING
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow v-if="invitations.length === 0">
+                      <TableCell colspan="3" class="h-24 text-center text-gray-500">
+                        No pending invitations.
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
-              <ul v-else class="space-y-3">
-                <li v-for="inv in invitations" :key="inv.id" class="p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                  <div>
-                    <h4 class="font-medium text-gray-800">{{ inv.invited_email }}</h4>
-                    <p class="text-xs text-gray-400 mt-1">Sent {{ new Date(inv.created_at).toLocaleDateString() }}</p>
-                  </div>
-                  <div class="flex flex-col items-end gap-2">
-                    <span class="px-2 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md">PENDING</span>
-                    <a :href="`/supplier/register?token=${inv.token}`" target="_blank" class="text-[11px] font-medium text-indigo-500 hover:text-indigo-700 underline decoration-indigo-300 decoration-wavy underline-offset-2">Simulation Link</a>
-                  </div>
-                </li>
-              </ul>
             </CardContent>
           </Card>
         </div>

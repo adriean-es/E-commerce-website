@@ -17,6 +17,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RbacSeeder::class);
 
+        $roles = ['admin', 'seller', 'supplier'];
+        foreach ($roles as $role) {
+            Role::firstOrCreate(['name' => $role]);
+        }
+
         $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@sarisari.ph',

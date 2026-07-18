@@ -6,6 +6,7 @@ use Inertia\Inertia;
 
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Admin\CatalogApprovalController;
+use App\Http\Controllers\Seller\InventoryController;
 
 // Module 3 Imports
 use App\Http\Controllers\Seller\SupplierController;
@@ -64,6 +65,15 @@ Route::middleware(['auth', 'role:seller'])->prefix('seller')->name('seller.')->g
     // Module 3: Procurement
     Route::resource('suppliers', SupplierController::class);
     Route::resource('purchase-orders', SellerPOController::class);
+
+    // Module 4: Inventory Management
+    Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('inventory/receive', [InventoryController::class, 'receiveStockForm'])->name('inventory.receive');
+    Route::post('inventory/receive', [InventoryController::class, 'receiveStock'])->name('inventory.receive.store');
+    Route::get('inventory/{inventory}/transactions', [InventoryController::class, 'transactionLog'])->name('inventory.transactions');
+    Route::post('inventory/adjustments', [InventoryController::class, 'storeAdjustment'])->name('inventory.adjustments.store');
+    Route::post('inventory/adjustments/{adjustment}/approve', [InventoryController::class, 'approveAdjustment'])->name('inventory.adjustments.approve');
+    Route::post('inventory/adjustments/{adjustment}/reject', [InventoryController::class, 'rejectAdjustment'])->name('inventory.adjustments.reject');
 });
 
 

@@ -26,65 +26,57 @@ const submit = () => {
 <template>
   <Head title="Supplier Registration" />
 
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
-      
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-          Sari-Sari Connect
-        </h1>
-        <p class="text-gray-500 mt-2">Supplier Portal Registration</p>
-      </div>
+  <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl font-bold text-gray-900">Sari-Sari Connect</h1>
+      <p class="text-sm text-gray-500 mt-1">Supplier Portal Registration</p>
+    </div>
 
-      <Card class="shadow-2xl border-0 bg-white/90 backdrop-blur-xl rounded-2xl overflow-hidden">
-        <CardHeader class="bg-indigo-600 text-white p-6 text-center">
-          <CardTitle class="text-xl font-bold">You've been invited!</CardTitle>
-          <p class="text-indigo-100 text-sm mt-1">Register to start receiving Purchase Orders.</p>
-        </CardHeader>
-        
-        <CardContent class="p-8">
+    <Card class="w-full max-w-md">
+      <CardHeader>
+        <CardTitle class="text-lg">You've been invited!</CardTitle>
+        <p class="text-sm text-gray-500">Register to start receiving Purchase Orders.</p>
+      </CardHeader>
+      
+      <CardContent>
+        <div v-if="userExists" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md text-sm mb-6">
+          <strong>Note:</strong> An account already exists for <b>{{ email }}</b>. Please enter a password to overwrite and register as a Supplier.
+        </div>
+
+        <form @submit.prevent="submit" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email (Locked)</label>
+            <Input type="email" :value="email" disabled class="bg-gray-100 text-gray-500" />
+          </div>
           
-          <div v-if="userExists" class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-sm mb-6">
-            <strong>Note:</strong> We noticed an account already exists for <b>{{ email }}</b>. For this demo, please enter a password to overwrite and register as a Supplier.
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+            <Input v-model="form.name" type="text" required autofocus placeholder="Juan Dela Cruz" />
+            <p v-if="form.errors.name" class="text-xs text-red-600 mt-1">{{ form.errors.name }}</p>
           </div>
 
-          <form @submit.prevent="submit" class="space-y-5">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email (Locked)</label>
-              <Input type="email" :value="email" disabled class="bg-gray-100 text-gray-500" />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-              <Input v-model="form.name" type="text" required autofocus placeholder="Juan Dela Cruz" />
-              <p v-if="form.errors.name" class="text-xs text-red-600 mt-1">{{ form.errors.name }}</p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+            <Input v-model="form.company_name" type="text" required placeholder="ABC Distributors Inc." />
+            <p v-if="form.errors.company_name" class="text-xs text-red-600 mt-1">{{ form.errors.company_name }}</p>
+          </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-              <Input v-model="form.company_name" type="text" required placeholder="ABC Distributors Inc." />
-              <p v-if="form.errors.company_name" class="text-xs text-red-600 mt-1">{{ form.errors.company_name }}</p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <Input v-model="form.password" type="password" required />
+            <p v-if="form.errors.password" class="text-xs text-red-600 mt-1">{{ form.errors.password }}</p>
+          </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <Input v-model="form.password" type="password" required />
-              <p v-if="form.errors.password" class="text-xs text-red-600 mt-1">{{ form.errors.password }}</p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <Input v-model="form.password_confirmation" type="password" required />
+          </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-              <Input v-model="form.password_confirmation" type="password" required />
-            </div>
-
-            <Button type="submit" :disabled="form.processing" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-transform transform hover:scale-105 h-11 text-lg rounded-xl">
-              Create Supplier Account
-            </Button>
-          </form>
-          
-        </CardContent>
-      </Card>
-      
-    </div>
+          <Button type="submit" :disabled="form.processing" class="w-full mt-2">
+            Create Supplier Account
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   </div>
 </template>

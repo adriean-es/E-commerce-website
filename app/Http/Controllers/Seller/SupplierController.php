@@ -47,16 +47,23 @@ class SupplierController extends Controller
             return back()->with('error', 'An invitation has already been sent to this email.');
         }
 
+        // Send actual email invitation
+        $token = Str::random(64);
+        
         // Create Invitation
         SupplierInvitation::create([
             'shop_id' => $shop->id,
             'invited_email' => $request->email,
-            'token' => Str::random(64),
+            'token' => $token,
             'expires_at' => now()->addDays(7),
         ]);
 
-        // Note: In a real app, we would dispatch an Email Job here.
-        // For testing, we will just grab the token from the database directly.
+        $registrationLink = url("/supplier/register?token={$token}");
+        
+        \Illuminate\Support\Facades\Mail::raw("You have been invited to become a supplier on Sari-Sari Connect! Registration Link: {$registrationLink}", function ($message) use ($request) {
+            $message->to($request->email)
+                    ->subject("Sari-Sari Connect Supplier Invitation");
+        });
 
         return back()->with('success', 'Supplier invitation sent successfully!');
     }

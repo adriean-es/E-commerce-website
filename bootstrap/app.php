@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            '/supplier/register'
+        ]);
 
         // Register role middleware alias so you can use 'role:admin' in routes
         $middleware->alias([

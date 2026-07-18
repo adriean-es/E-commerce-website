@@ -44,34 +44,55 @@ class RegistrationController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $invitation = SupplierInvitation::where('token', $request->token)
-            ->where('status', 'pending')
-            ->firstOrFail();
+        $invitation = SupplierInvitation::where('token', $request->token)->first();
+
+        if (!$invitation || $invitation->status !== 'pending') {
+            return redirect()->route('login')->with('error', 'This invitation has already been processed or is invalid.');
+        }
 
         DB::transaction(function () use ($request, $invitation) {
-            // 1. Create User
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $invitation->invited_email,
-                'password' => Hash::make($request->password),
-                'email_verified_at' => now(), // Auto-verify
-            ]);
+            // 1. Create or Update User
+            $user = User::firstOrCreate(
+                ['email' => $invitation->invited_email],
+                [
+                    'name' => $request->name,
+                    'password' => Hash::make($request->password),
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            // If user already existed, we still want to update their password to what they just entered
+            if (!$user->wasRecentlyCreated) {
+                $user->update([
+                    'password' => Hash::make($request->password)
+                ]);
+            }
 
             $user->assignRole('supplier');
 
-            // 2. Create Supplier Profile
-            $supplier = SupplierProfile::create([
-                'user_id' => $user->id,
-                'company_name' => $request->company_name,
-                'status' => 'active',
-            ]);
+            // 2. Create or Update Supplier Profile
+            $supplier = SupplierProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'company_name' => $request->company_name,
+                    'status' => 'active',
+                ]
+            );
 
             // 3. Link Seller to Supplier
-            $invitation->shop->suppliers()->attach($supplier->id, [
-                'status' => 'active',
-                'invited_at' => $invitation->created_at,
-                'accepted_at' => now(),
-            ]);
+            // Check if pivot already exists to avoid duplicate entries
+            $pivotExists = DB::table('seller_suppliers')
+                ->where('shop_id', $invitation->shop->id)
+                ->where('supplier_id', $supplier->id)
+                ->exists();
+
+            if (!$pivotExists) {
+                $invitation->shop->suppliers()->attach($supplier->id, [
+                    'status' => 'active',
+                    'invited_at' => $invitation->created_at,
+                    'accepted_at' => now(),
+                ]);
+            }
 
             // 4. Update Invitation status
             $invitation->update([

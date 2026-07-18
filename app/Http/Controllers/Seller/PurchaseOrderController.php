@@ -46,7 +46,7 @@ class PurchaseOrderController extends Controller
         $request->validate([
             'supplier_id' => 'required|exists:supplier_profiles,id',
             'delivery_address' => 'required|string',
-            'expected_delivery_date' => 'nullable|date',
+            'expected_delivery_date' => 'required|date|after_or_equal:today',
             'items' => 'required|array|min:1',
             'items.*.variant_id' => 'required|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
